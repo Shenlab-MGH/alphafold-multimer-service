@@ -1,0 +1,22 @@
+.DS_Store
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+.venv/
+venv/
+
+# runtime data (jobs, outputs, logs)
+data/
+
+# local env
+.env
+
+# Node (for optional e2e tests co-located here later)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

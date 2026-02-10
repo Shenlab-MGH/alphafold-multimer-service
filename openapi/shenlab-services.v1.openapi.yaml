@@ -1,0 +1,386 @@
+openapi: 3.1.0
+info:
+  title: Shen Lab Services API
+  version: 1.0.0
+  description: |
+    Stable, versioned HTTP API for Shen Lab compute services.
+
+servers:
+  - url: http://localhost:5090
+
+paths:
+  /api/v1/health:
+    get:
+      operationId: healthCheck
+      summary: Health check
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /api/v1/services:
+    get:
+      operationId: listServices
+      summary: List available services
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceListResponse"
+
+  /api/v1/services/alphafold-multimer/jobs:
+    post:
+      operationId: createAlphaFoldMultimerJob
+      summary: Submit an AlphaFold-Multimer job (pair)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AlphaFoldMultimerJobCreateRequest"
+      responses:
+        "201":
+          description: Job created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobCreateResponse"
+        "401":
+          description: Missing/invalid token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/jobs/{job_id}:
+    get:
+      operationId: getJobStatus
+      summary: Get job status/progress
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobStatusResponse"
+        "404":
+          description: Job not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/jobs/{job_id}/result:
+    get:
+      operationId: getJobResult
+      summary: Get job result (when succeeded)
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AlphaFoldMultimerResultResponse"
+        "404":
+          description: Job not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Job not finished yet
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/jobs/{job_id}/artifacts/{artifact_name}:
+    get:
+      operationId: downloadJobArtifact
+      summary: Download a job artifact
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: artifact_name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Binary artifact
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+
+  schemas:
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+        request_id:
+          type: string
+
+    HealthResponse:
+      type: object
+      additionalProperties: false
+      required: [status, time]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        time:
+          type: string
+          format: date-time
+        version:
+          type: string
+
+    ServiceInfo:
+      type: object
+      additionalProperties: false
+      required: [name, version, description]
+      properties:
+        name:
+          type: string
+        version:
+          type: string
+        description:
+          type: string
+
+    ServiceListResponse:
+      type: object
+      additionalProperties: false
+      required: [services]
+      properties:
+        services:
+          type: array
+          items:
+            $ref: "#/components/schemas/ServiceInfo"
+
+    ProteinRef:
+      type: object
+      additionalProperties: false
+      required: [uniprot]
+      properties:
+        uniprot:
+          type: string
+          description: UniProt accession or UniProt URL (entry or FASTA).
+
+    AlphaFoldMultimerPreset:
+      type: string
+      enum: [fast, full]
+      description: |
+        fast: fewer recycles for speed (recommended for quick scoring)
+        full: more recycles for maximum accuracy (slower)
+
+    AlphaFoldMultimerJobCreateRequest:
+      type: object
+      additionalProperties: false
+      required: [protein_a, protein_b]
+      properties:
+        protein_a:
+          $ref: "#/components/schemas/ProteinRef"
+        protein_b:
+          $ref: "#/components/schemas/ProteinRef"
+        preset:
+          $ref: "#/components/schemas/AlphaFoldMultimerPreset"
+          default: fast
+        options:
+          type: object
+          additionalProperties: false
+          properties:
+            num_recycles:
+              type: integer
+              minimum: 0
+              maximum: 30
+              description: Override number of recycles (preset-dependent default).
+
+    JobCreateResponse:
+      type: object
+      additionalProperties: false
+      required: [job_id, status, status_url, result_url]
+      properties:
+        job_id:
+          type: string
+        status:
+          $ref: "#/components/schemas/JobStatus"
+        status_url:
+          type: string
+        result_url:
+          type: string
+
+    JobStatus:
+      type: string
+      enum: [queued, running, succeeded, failed]
+
+    JobProgress:
+      type: object
+      additionalProperties: false
+      required: [stage, message]
+      properties:
+        stage:
+          type: string
+        message:
+          type: string
+        percent:
+          type: number
+          minimum: 0
+          maximum: 100
+
+    JobStatusResponse:
+      type: object
+      additionalProperties: false
+      required: [job_id, service, status, created_at, progress]
+      properties:
+        job_id:
+          type: string
+        service:
+          type: string
+        status:
+          $ref: "#/components/schemas/JobStatus"
+        created_at:
+          type: string
+          format: date-time
+        started_at:
+          type: string
+          format: date-time
+        finished_at:
+          type: string
+          format: date-time
+        progress:
+          $ref: "#/components/schemas/JobProgress"
+        error:
+          type: string
+
+    PrimaryScore:
+      type: object
+      additionalProperties: false
+      required: [name, value]
+      properties:
+        name:
+          type: string
+          enum: [ranking_confidence]
+        value:
+          type: number
+
+    Artifact:
+      type: object
+      additionalProperties: false
+      required: [name, url]
+      properties:
+        name:
+          type: string
+        url:
+          type: string
+        media_type:
+          type: string
+        size_bytes:
+          type: integer
+
+    AlphaFoldMultimerMetrics:
+      type: object
+      additionalProperties: false
+      required: [iptm, ptm, ranking_confidence, plddt]
+      properties:
+        iptm:
+          type: number
+        ptm:
+          type: number
+        ranking_confidence:
+          type: number
+        plddt:
+          type: number
+        interface_pae_mean:
+          type: number
+        interface_pae_mean_ab:
+          type: number
+        interface_pae_mean_ba:
+          type: number
+
+    AlphaFoldMultimerVerification:
+      type: object
+      additionalProperties: false
+      required: [chain_lengths_match]
+      properties:
+        chain_lengths_match:
+          type: boolean
+        chain_a_length_a3m:
+          type: integer
+        chain_b_length_a3m:
+          type: integer
+        chain_a_length_pdb:
+          type: integer
+        chain_b_length_pdb:
+          type: integer
+
+    AlphaFoldMultimerResultResponse:
+      type: object
+      additionalProperties: false
+      required: [job_id, service, status, primary_score, metrics, verification, artifacts]
+      properties:
+        job_id:
+          type: string
+        service:
+          type: string
+          enum: [alphafold-multimer]
+        status:
+          $ref: "#/components/schemas/JobStatus"
+        primary_score:
+          $ref: "#/components/schemas/PrimaryScore"
+        metrics:
+          $ref: "#/components/schemas/AlphaFoldMultimerMetrics"
+        verification:
+          $ref: "#/components/schemas/AlphaFoldMultimerVerification"
+        artifacts:
+          type: array
+          items:
+            $ref: "#/components/schemas/Artifact"
+
