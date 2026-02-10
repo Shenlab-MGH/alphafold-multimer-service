@@ -8,7 +8,13 @@ set -euo pipefail
 # This script is meant to be launched by Playwright's webServer and kept running.
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-FRONTEND_DIR="/home/robot/workspace/shenlab/17-lab-web"
+FRONTEND_DIR="${SHENLAB_FRONTEND_DIR:-${ROOT_DIR}/../17-lab-web}"
+
+if [[ ! -d "${FRONTEND_DIR}" ]]; then
+  echo "ERROR: frontend dir not found: ${FRONTEND_DIR}" >&2
+  echo "Set SHENLAB_FRONTEND_DIR to your shenlab-web checkout (e.g. /path/to/17-lab-web)." >&2
+  exit 1
+fi
 
 export SHENLAB_MOCK=1
 export SHENLAB_DATA_DIR="${SHENLAB_DATA_DIR:-$(mktemp -d)}"
