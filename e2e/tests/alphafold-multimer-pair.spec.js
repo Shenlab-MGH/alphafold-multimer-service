@@ -3,9 +3,11 @@ import { test, expect } from '@playwright/test';
 const ACCESS_HASH = '109d69efaeb106feec54886294ea328a962af4c6c40227dfa6859dd7332f6531';
 const STORAGE_KEY = 'shenlab_auth';
 const API_BASE = process.env.SHENLAB_E2E_API_BASE || 'http://127.0.0.1:5090';
+const IS_REAL_MODE = process.env.SHENLAB_E2E_MODE === 'real';
 
 test.describe('AlphaFold-Multimer (Pair) UI', () => {
   test('Given two UniProt refs, when run, then primary score is shown (mock)', async ({ page, request }) => {
+    test.skip(IS_REAL_MODE, 'Mock-only assertion suite');
     await test.step('Given I am authenticated in the frontend', async () => {
       await page.addInitScript(({ key, hash }) => {
         localStorage.setItem(key, hash);
@@ -58,6 +60,7 @@ test.describe('AlphaFold-Multimer (Pair) UI', () => {
   });
 
   test('Given two real UniProt links, when run, then detailed result fields are rendered', async ({ page }) => {
+    test.skip(IS_REAL_MODE, 'Mock-only assertion suite');
     await page.addInitScript(({ key, hash }) => {
       localStorage.setItem(key, hash);
     }, { key: STORAGE_KEY, hash: ACCESS_HASH });

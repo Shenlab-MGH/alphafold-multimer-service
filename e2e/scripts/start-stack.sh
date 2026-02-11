@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Starts:
-#  - backend (mock mode) on SHENLAB_E2E_BACKEND_PORT (default 5090)
+#  - backend (mock or real mode) on SHENLAB_E2E_BACKEND_PORT (default 5090)
 #  - frontend (static) on SHENLAB_E2E_FRONTEND_PORT (default 5180)
 #
 # This script is meant to be launched by Playwright's webServer and kept running.
@@ -24,8 +24,15 @@ if [[ ! -d "${FRONTEND_DIR}" ]]; then
   exit 1
 fi
 
-export SHENLAB_MOCK=1
-export SHENLAB_DATA_DIR="${SHENLAB_DATA_DIR:-$(mktemp -d)}"
+E2E_MODE="${SHENLAB_E2E_MODE:-mock}"
+if [[ "${E2E_MODE}" == "real" ]]; then
+  export SHENLAB_MOCK=0
+  export SHENLAB_DATA_DIR="${SHENLAB_DATA_DIR:-${ROOT_DIR}/data}"
+  export SHENLAB_COLABFOLD_CACHE_DIR="${SHENLAB_COLABFOLD_CACHE_DIR:-${ROOT_DIR}/data/colabfold_cache}"
+else
+  export SHENLAB_MOCK=1
+  export SHENLAB_DATA_DIR="${SHENLAB_DATA_DIR:-$(mktemp -d)}"
+fi
 BACKEND_PORT="${SHENLAB_E2E_BACKEND_PORT:-5090}"
 FRONTEND_PORT="${SHENLAB_E2E_FRONTEND_PORT:-5180}"
 
