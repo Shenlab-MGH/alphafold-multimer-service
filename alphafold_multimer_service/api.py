@@ -5,7 +5,7 @@ import re
 from pathlib import Path
 from typing import Annotated
 
-from fastapi import Depends, FastAPI, Header, HTTPException, Request, Response, status
+from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.responses import FileResponse
@@ -21,6 +21,8 @@ from alphafold_multimer_service.schemas import (
     ErrorResponse,
     HealthResponse,
     JobCreateResponse,
+    JobListItem,
+    JobListResponse,
     JobStatusResponse,
     ServiceInfo,
     ServiceListResponse,
@@ -164,6 +166,51 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             status_url=f"/api/v1/jobs/{rec.job_id}",
             result_url=f"/api/v1/jobs/{rec.job_id}/result",
         )
+
+    @app.get(
+        "/api/v1/jobs",
+        response_model=JobListResponse,
+    )
+    def list_jobs(
+        limit: int = Query(default=20, ge=1, le=200),
+        offset: int = Query(default=0, ge=0),
+    ) -> JobListResponse:
+        rows = store.list(limit=limit, offset=offset)
+        items: list[JobListItem] = []
+        for rec in rows:
+            req = rec.request or {}
+            protein_a = (req.get("protein_a") or {}).get("uniprot")
+            protein_b = (req.get("protein_b") or {}).get("uniprot")
+            preset = req.get("preset")
+
+            primary_score_value: float | None = None
+            if rec.status == "succeeded":
+                obj = store.read_result(rec.job_id)
+                if obj is not None:
+                    try:
+                        primary_score_value = float((obj.get("primary_score") or {}).get("value"))
+                    except (TypeError, ValueError):
+                        primary_score_value = None
+
+            items.append(
+                JobListItem(
+                    job_id=rec.job_id,
+                    service=rec.service,
+                    status=rec.status,  # type: ignore[arg-type]
+                    created_at=rec.created_at,
+                    started_at=rec.started_at,
+                    finished_at=rec.finished_at,
+                    protein_a_uniprot=protein_a,
+                    protein_b_uniprot=protein_b,
+                    preset=preset,
+                    primary_score_value=primary_score_value,
+                    status_url=f"/api/v1/jobs/{rec.job_id}",
+                    result_url=f"/api/v1/jobs/{rec.job_id}/result",
+                    error=rec.error,
+                )
+            )
+
+        return JobListResponse(total=store.count(), limit=limit, offset=offset, jobs=items)
 
     @app.get(
         "/api/v1/jobs/{job_id}",

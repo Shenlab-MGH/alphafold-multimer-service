@@ -82,6 +82,24 @@ class JobStore:
         self._mem[rec.job_id] = rec
         self._write_job(rec)
 
+    def list(self, *, limit: int, offset: int) -> list[JobRecord]:
+        recs: list[JobRecord] = []
+        for p in self._jobs_dir.iterdir():
+            if not p.is_dir():
+                continue
+            rec = self.get(p.name)
+            if rec is not None:
+                recs.append(rec)
+        recs.sort(key=lambda r: r.created_at, reverse=True)
+        return recs[offset : offset + limit]
+
+    def count(self) -> int:
+        n = 0
+        for p in self._jobs_dir.iterdir():
+            if p.is_dir():
+                n += 1
+        return n
+
     def write_result(self, job_id: str, result: dict[str, Any]) -> None:
         p = self._result_json_path(job_id)
         p.write_text(json.dumps(result, indent=2, default=str) + "\n", encoding="utf-8")
@@ -219,4 +237,3 @@ class JobManager:
             }
         )
         self._store.update(rec)
-

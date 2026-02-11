@@ -94,3 +94,48 @@ def test_result_before_ready_returns_409(app) -> None:
         res = client.get(f"/api/v1/jobs/{job_id}/result")
         assert res.status_code == 409
         assert "error" in res.json()
+
+
+def test_list_jobs_history_includes_input_and_score(app) -> None:
+    with TestClient(app) as client:
+        created_ids: list[str] = []
+        for protein_a, protein_b in [("P35625", "A0A2R8Y7G1"), ("A0A2R8Y7G1", "P35625")]:
+            r = client.post(
+                "/api/v1/services/alphafold-multimer/jobs",
+                json={
+                    "protein_a": {"uniprot": protein_a},
+                    "protein_b": {"uniprot": protein_b},
+                    "preset": "fast",
+                },
+            )
+            assert r.status_code == 201
+            created_ids.append(r.json()["job_id"])
+
+        # wait until both jobs finish in mock mode
+        deadline = time.time() + 10
+        while time.time() < deadline:
+            statuses = [client.get(f"/api/v1/jobs/{jid}").json()["status"] for jid in created_ids]
+            if all(s == "succeeded" for s in statuses):
+                break
+            time.sleep(0.05)
+
+        hist = client.get("/api/v1/jobs?limit=20&offset=0")
+        assert hist.status_code == 200
+        body = hist.json()
+        assert body["total"] >= 2
+        assert body["limit"] == 20
+        assert body["offset"] == 0
+        assert isinstance(body["jobs"], list)
+
+        by_id = {row["job_id"]: row for row in body["jobs"]}
+        for jid in created_ids:
+            assert jid in by_id
+            row = by_id[jid]
+            assert row["status"] == "succeeded"
+            assert row["service"] == "alphafold-multimer"
+            assert row["protein_a_uniprot"] in {"P35625", "A0A2R8Y7G1"}
+            assert row["protein_b_uniprot"] in {"P35625", "A0A2R8Y7G1"}
+            assert row["preset"] == "fast"
+            assert isinstance(row["primary_score_value"], (int, float))
+            assert row["status_url"].endswith(f"/api/v1/jobs/{jid}")
+            assert row["result_url"].endswith(f"/api/v1/jobs/{jid}/result")

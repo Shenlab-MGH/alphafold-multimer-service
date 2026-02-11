@@ -73,6 +73,29 @@ class JobStatusResponse(BaseModel):
     error: str | None = None
 
 
+class JobListItem(BaseModel):
+    job_id: str
+    service: str
+    status: JobStatus
+    created_at: datetime
+    started_at: datetime | None = None
+    finished_at: datetime | None = None
+    protein_a_uniprot: str | None = None
+    protein_b_uniprot: str | None = None
+    preset: str | None = None
+    primary_score_value: float | None = None
+    status_url: str
+    result_url: str
+    error: str | None = None
+
+
+class JobListResponse(BaseModel):
+    total: int
+    limit: int
+    offset: int
+    jobs: list[JobListItem]
+
+
 class PrimaryScore(BaseModel):
     name: Literal["ranking_confidence"]
     value: float
@@ -111,4 +134,3 @@ class AlphaFoldMultimerResultResponse(BaseModel):
     metrics: AlphaFoldMultimerMetrics
     verification: AlphaFoldMultimerVerification
     artifacts: list[Artifact]
-

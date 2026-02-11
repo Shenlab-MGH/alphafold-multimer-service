@@ -59,6 +59,23 @@ test.describe('AlphaFold-Multimer (Pair) UI', () => {
     await expect(page.getByTestId('af-error')).toContainText('UniProt');
   });
 
+  test('Given existing jobs, when opening tools, then history list shows job entries and links', async ({ page }) => {
+    test.skip(IS_REAL_MODE, 'Mock-only assertion suite');
+    await page.addInitScript(({ key, hash }) => {
+      localStorage.setItem(key, hash);
+    }, { key: STORAGE_KEY, hash: ACCESS_HASH });
+
+    await page.goto('/#tools');
+    await expect(page.getByTestId('af-form')).toBeVisible();
+    await page.getByTestId('af-api-base').fill(API_BASE);
+    await page.getByTestId('af-history-refresh').click();
+
+    await expect(page.getByTestId('af-history-list').locator('.tool-history-item').first()).toBeVisible();
+    await expect(page.getByTestId('af-history-list')).toContainText('status');
+    await expect(page.getByTestId('af-history-list')).toContainText('result');
+    await expect(page.getByTestId('af-history-list')).toContainText('log.txt');
+  });
+
   test('Given two real UniProt links, when run, then detailed result fields are rendered', async ({ page }) => {
     test.skip(IS_REAL_MODE, 'Mock-only assertion suite');
     await page.addInitScript(({ key, hash }) => {
