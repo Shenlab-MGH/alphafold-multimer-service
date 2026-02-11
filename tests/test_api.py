@@ -4,7 +4,7 @@ import time
 
 from fastapi.testclient import TestClient
 
-from shenlab_services.alphafold_multimer.runner import AlphaFoldMultimerRunner
+from alphafold_multimer_service.alphafold_multimer.runner import AlphaFoldMultimerRunner
 
 
 def test_health(app) -> None:

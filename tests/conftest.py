@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from shenlab_services.api import create_app
-from shenlab_services.config import Settings
+from alphafold_multimer_service.api import create_app
+from alphafold_multimer_service.config import Settings
 
 
 @pytest.fixture()

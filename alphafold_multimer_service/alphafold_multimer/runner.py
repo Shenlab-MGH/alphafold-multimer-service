@@ -9,13 +9,13 @@ import shutil
 import subprocess
 from typing import Callable
 
-from shenlab_services.alphafold_multimer.parser import (
+from alphafold_multimer_service.alphafold_multimer.parser import (
     compute_interface_pae_means,
     count_residues_per_chain_pdb,
     parse_a3m_chain_lengths,
     parse_rank1_from_log,
 )
-from shenlab_services.uniprot import extract_uniprot_id, fetch_fasta, fasta_to_sequence
+from alphafold_multimer_service.uniprot import extract_uniprot_id, fetch_fasta, fasta_to_sequence
 
 
 ProgressCb = Callable[[str, str, float | None], None]

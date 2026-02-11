@@ -55,7 +55,7 @@ def extract_uniprot_id(uniprot_ref: str) -> str:
 
 def fetch_fasta(uniprot_id: str, *, timeout_s: float = 30.0) -> str:
     url = f"https://rest.uniprot.org/uniprotkb/{uniprot_id}.fasta"
-    r = requests.get(url, timeout=timeout_s, headers={"User-Agent": "shenlab-services/alphafold-multimer"})
+    r = requests.get(url, timeout=timeout_s, headers={"User-Agent": "alphafold-multimer-service/alphafold-multimer"})
     r.raise_for_status()
     return r.text
 

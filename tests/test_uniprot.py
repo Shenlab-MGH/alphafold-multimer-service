@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from shenlab_services.uniprot import extract_uniprot_id
+from alphafold_multimer_service.uniprot import extract_uniprot_id
 
 
 @pytest.mark.parametrize(

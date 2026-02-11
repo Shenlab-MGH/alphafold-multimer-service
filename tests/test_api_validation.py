@@ -4,8 +4,8 @@ from pathlib import Path
 
 from fastapi.testclient import TestClient
 
-from shenlab_services.api import create_app
-from shenlab_services.config import Settings
+from alphafold_multimer_service.api import create_app
+from alphafold_multimer_service.config import Settings
 
 
 def test_create_job_rejects_invalid_uniprot_ref(app) -> None:

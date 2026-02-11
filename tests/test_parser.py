@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from shenlab_services.alphafold_multimer.parser import (
+from alphafold_multimer_service.alphafold_multimer.parser import (
     compute_interface_pae_means,
     count_residues_per_chain_pdb,
     parse_a3m_chain_lengths,

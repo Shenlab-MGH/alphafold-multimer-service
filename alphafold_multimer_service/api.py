@@ -11,11 +11,11 @@ from fastapi.responses import JSONResponse
 from fastapi.responses import FileResponse
 from fastapi.exceptions import RequestValidationError
 
-from shenlab_services import __version__
-from shenlab_services.alphafold_multimer.runner import ColabFoldDockerRunner, MockAlphaFoldMultimerRunner
-from shenlab_services.config import Settings, load_settings
-from shenlab_services.jobs import JobManager, JobStore
-from shenlab_services.schemas import (
+from alphafold_multimer_service import __version__
+from alphafold_multimer_service.alphafold_multimer.runner import ColabFoldDockerRunner, MockAlphaFoldMultimerRunner
+from alphafold_multimer_service.config import Settings, load_settings
+from alphafold_multimer_service.jobs import JobManager, JobStore
+from alphafold_multimer_service.schemas import (
     AlphaFoldMultimerJobCreateRequest,
     AlphaFoldMultimerResultResponse,
     ErrorResponse,
@@ -25,7 +25,7 @@ from shenlab_services.schemas import (
     ServiceInfo,
     ServiceListResponse,
 )
-from shenlab_services.uniprot import extract_uniprot_id
+from alphafold_multimer_service.uniprot import extract_uniprot_id
 
 
 def _utc_now() -> datetime:
@@ -78,7 +78,7 @@ def _require_bearer_if_configured(
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or load_settings()
 
-    app = FastAPI(title="Shen Lab Services API", version=__version__)
+    app = FastAPI(title="AlphaFold-Multimer Service API", version=__version__)
     _build_cors(app, settings)
 
     @app.exception_handler(HTTPException)

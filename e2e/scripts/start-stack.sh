@@ -31,7 +31,7 @@ trap cleanup EXIT INT TERM
 
 cd "${ROOT_DIR}"
 
-uvicorn shenlab_services.api:create_app --factory --host 127.0.0.1 --port 5090 >"${BACKEND_LOG}" 2>&1 &
+uvicorn alphafold_multimer_service.api:create_app --factory --host 127.0.0.1 --port 5090 >"${BACKEND_LOG}" 2>&1 &
 BACK_PID=$!
 
 python -m http.server 5180 --bind 127.0.0.1 --directory "${FRONTEND_DIR}" >"${FRONTEND_LOG}" 2>&1 &

@@ -19,8 +19,8 @@ AlphaFold runner (ColabFold):
 ## Run Locally (Mock)
 
 ```bash
-cd shenlab-services
-SHENLAB_MOCK=1 uvicorn shenlab_services.api:create_app --factory --host 0.0.0.0 --port 5090
+cd alphafold-multimer-service
+SHENLAB_MOCK=1 uvicorn alphafold_multimer_service.api:create_app --factory --host 0.0.0.0 --port 5090
 ```
 
 ## Run On GPU Server (Real)
@@ -34,29 +34,29 @@ Requirements:
 Run:
 
 ```bash
-cd shenlab-services
-export SHENLAB_DATA_DIR=/data/shenlab-services
+cd alphafold-multimer-service
+export SHENLAB_DATA_DIR=/data/alphafold-multimer-service
 export SHENLAB_CORS_ALLOW_ORIGINS="https://*.vercel.app,https://YOUR-PROD-DOMAIN"
-uvicorn shenlab_services.api:create_app --factory --host 0.0.0.0 --port 5090
+uvicorn alphafold_multimer_service.api:create_app --factory --host 0.0.0.0 --port 5090
 ```
 
 ## systemd (Example)
 
-Create `/etc/systemd/system/shenlab-services.service`:
+Create `/etc/systemd/system/alphafold-multimer-service.service`:
 
 ```ini
 [Unit]
-Description=Shen Lab Services API
+Description=AlphaFold-Multimer Service API
 After=network.target docker.service
 Requires=docker.service
 
 [Service]
 Type=simple
-WorkingDirectory=/home/robot/workspace/shenlab/shenlab-services
-Environment=SHENLAB_DATA_DIR=/data/shenlab-services
+WorkingDirectory=/home/robot/workspace/shenlab/alphafold-multimer-service
+Environment=SHENLAB_DATA_DIR=/data/alphafold-multimer-service
 Environment=SHENLAB_CORS_ALLOW_ORIGINS=https://*.vercel.app
 # Environment=SHENLAB_API_TOKEN=... (optional)
-ExecStart=/home/robot/miniconda3/bin/uvicorn shenlab_services.api:create_app --factory --host 0.0.0.0 --port 5090
+ExecStart=/home/robot/miniconda3/bin/uvicorn alphafold_multimer_service.api:create_app --factory --host 0.0.0.0 --port 5090
 Restart=always
 RestartSec=2
 
@@ -68,7 +68,7 @@ Then:
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable --now shenlab-services
-sudo systemctl status shenlab-services
+sudo systemctl enable --now alphafold-multimer-service
+sudo systemctl status alphafold-multimer-service
 ```
 

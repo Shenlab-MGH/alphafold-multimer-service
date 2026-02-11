@@ -1,9 +1,9 @@
 openapi: 3.1.0
 info:
-  title: Shen Lab Services API
+  title: AlphaFold-Multimer Service API
   version: 1.0.0
   description: |
-    Stable, versioned HTTP API for Shen Lab compute services.
+    Stable, versioned HTTP API for AlphaFold-Multimer pair scoring.
 
 servers:
   - url: http://localhost:5090
@@ -383,4 +383,3 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Artifact"
-

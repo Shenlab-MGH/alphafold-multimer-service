@@ -1,31 +1,34 @@
-# Shen Lab Services (Backend)
+# AlphaFold-Multimer Service
 
-This repository hosts **lab-deployed backend services** (GPU/CPU) behind a stable, versioned HTTP API.
+`alphafold-multimer-service` is a backend service that accepts two UniProt proteins and returns:
 
-Current service(s):
+- Primary score: `ranking_confidence = 0.8*ipTM + 0.2*pTM`
+- Detailed metrics: `ipTM`, `pTM`, `pLDDT`, interface PAE summary
+- Verification: A3M and PDB chain length consistency
+- Artifacts: log, PDB, PAE JSON, score JSON, input files
 
-- **AlphaFold-Multimer (pair)**: submit 2 UniProt links/accessions, run prediction, and return a single **primary score** (`ranking_confidence`) plus detailed metrics and verification.
+The service is designed for lab deployment on a GPU server and exposes a stable versioned API (`/api/v1/...`).
 
-## Quick Start (Dev)
+## Quick Start
+
+### 1) Run backend in mock mode (no GPU)
 
 ```bash
-cd shenlab-services
-
-# Mock mode (no GPU, deterministic results) on http://127.0.0.1:5090
-SHENLAB_MOCK=1 uvicorn shenlab_services.api:create_app --factory --host 0.0.0.0 --port 5090
+cd alphafold-multimer-service
+SHENLAB_MOCK=1 uvicorn alphafold_multimer_service.api:create_app --factory --host 0.0.0.0 --port 5090
 ```
 
-Health check:
+### 2) Health check
 
 ```bash
 curl -s http://127.0.0.1:5090/api/v1/health | jq
 ```
 
-## Run A Job (Example)
+### 3) Submit one job
 
 ```bash
-curl -s -X POST http://127.0.0.1:5090/api/v1/services/alphafold-multimer/jobs \\
-  -H 'Content-Type: application/json' \\
+curl -s -X POST http://127.0.0.1:5090/api/v1/services/alphafold-multimer/jobs \
+  -H 'Content-Type: application/json' \
   -d '{
     "protein_a": { "uniprot": "https://www.uniprot.org/uniprotkb/P35625/entry" },
     "protein_b": { "uniprot": "A0A2R8Y7G1" },
@@ -33,24 +36,40 @@ curl -s -X POST http://127.0.0.1:5090/api/v1/services/alphafold-multimer/jobs \\
   }' | jq
 ```
 
-Then poll:
+Poll and fetch result:
 
 ```bash
 curl -s http://127.0.0.1:5090/api/v1/jobs/<JOB_ID> | jq
 curl -s http://127.0.0.1:5090/api/v1/jobs/<JOB_ID>/result | jq
 ```
 
-## API Definition (Source Of Truth)
+## API Contract
 
-OpenAPI spec:
+- OpenAPI source of truth: `openapi/alphafold-multimer-service.v1.openapi.yaml`
 
-- `openapi/shenlab-services.v1.openapi.yaml`
+Frontend clients should use this file as the integration contract.
 
-Frontend(s) (Vercel/static) should treat the OpenAPI file as the contract.
+## Documentation Map
 
-## Notes For Production
+- Service behavior/spec: `docs/specs/alphafold-multimer-pair.md`
+- Pipeline details: `docs/alphafold-multimer-pair-service.md`
+- Architecture: `docs/architecture.md`
+- API manual: `docs/api.md`
+- Deployment: `docs/deploy.md`
+- Operations runbook: `docs/operations.md`
+- Testing guide: `docs/testing.md`
+- Web integration guide: `docs/integration-web.md`
 
-- The real AlphaFold-Multimer runner uses **ColabFold** to run AlphaFold2-Multimer models in Docker.
-- For RTX 5090 (SM 12.0), the container CUDA toolchain may be too old; the runner supports bind-mounting host `ptxas`.
-- A single-GPU job queue is used by default (one heavy job at a time).
+## Repository Structure
 
+- `alphafold_multimer_service/`: service code
+- `openapi/`: API contract files
+- `tests/`: unit/API/contract tests
+- `e2e/`: front-to-back browser tests (Playwright)
+- `docs/`: design, deployment, and operations manuals
+
+## Production Notes
+
+- Real inference uses ColabFold + AlphaFold2-Multimer v3 in Docker.
+- RTX 5090 typically requires mounting host `ptxas`.
+- Jobs are queued and executed one-at-a-time on a single GPU worker.

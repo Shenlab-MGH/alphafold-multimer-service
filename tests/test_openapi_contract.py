@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 
 def test_app_openapi_contains_documented_paths(app) -> None:
     client = TestClient(app)
-    spec_path = Path(__file__).resolve().parents[1] / "openapi" / "shenlab-services.v1.openapi.yaml"
+    spec_path = Path(__file__).resolve().parents[1] / "openapi" / "alphafold-multimer-service.v1.openapi.yaml"
     spec = yaml.safe_load(spec_path.read_text(encoding="utf-8"))
     documented_paths = spec["paths"].keys()
 

@@ -10,7 +10,7 @@ import uuid
 
 from pydantic import BaseModel, Field
 
-from shenlab_services.alphafold_multimer.runner import AlphaFoldMultimerRunner
+from alphafold_multimer_service.alphafold_multimer.runner import AlphaFoldMultimerRunner
 
 
 def utc_now() -> datetime:
