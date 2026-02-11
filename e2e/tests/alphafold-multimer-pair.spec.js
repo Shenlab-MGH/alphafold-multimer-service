@@ -56,4 +56,24 @@ test.describe('AlphaFold-Multimer (Pair) UI', () => {
     await expect(page.getByTestId('af-error')).toBeVisible();
     await expect(page.getByTestId('af-error')).toContainText('UniProt');
   });
+
+  test('Given two real UniProt links, when run, then detailed result fields are rendered', async ({ page }) => {
+    await page.addInitScript(({ key, hash }) => {
+      localStorage.setItem(key, hash);
+    }, { key: STORAGE_KEY, hash: ACCESS_HASH });
+
+    await page.goto('/#tools');
+    await expect(page.getByTestId('af-form')).toBeVisible();
+
+    await page.getByTestId('af-api-base').fill(API_BASE);
+    await page.getByTestId('af-protein-a').fill('https://www.uniprot.org/uniprotkb/P35625/entry');
+    await page.getByTestId('af-protein-b').fill('https://rest.uniprot.org/uniprotkb/Q13424-1.fasta');
+    await page.getByTestId('af-submit').click();
+
+    await expect(page.getByTestId('af-status')).toHaveText('Done.');
+    await expect(page.getByTestId('af-primary-score')).toHaveText('0.3000');
+    await expect(page.getByTestId('af-metrics')).toContainText('ranking_confidence');
+    await expect(page.getByTestId('af-verification')).toContainText('chain_lengths_match');
+    await expect(page.locator('[data-testid="af-artifacts"] a').first()).toBeVisible();
+  });
 });
