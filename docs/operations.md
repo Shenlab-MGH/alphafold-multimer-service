@@ -2,18 +2,44 @@
 
 ## Service Control
 
-If using `systemd`:
+If using user-level `systemd` (current deployment):
 
 ```bash
-sudo systemctl status alphafold-multimer-service
-sudo systemctl restart alphafold-multimer-service
-sudo journalctl -u alphafold-multimer-service -f
+systemctl --user status alphafold-multimer.service
+systemctl --user restart alphafold-multimer.service
+systemctl --user status alphafold-multimer-ngrok.service
+journalctl --user -u alphafold-multimer.service -f
+journalctl --user -u alphafold-multimer-ngrok.service -f
+```
+
+Current public API URL:
+
+```bash
+https://chandra-unintentional-matrilaterally.ngrok-free.dev
+```
+
+## tmux Live Monitoring
+
+Create a persistent two-window monitor session:
+
+```bash
+tmux new-session -d -s afm-monitor 'journalctl --user -fu alphafold-multimer.service'
+tmux new-window -t afm-monitor -n ngrok 'journalctl --user -fu alphafold-multimer-ngrok.service'
+tmux attach -t afm-monitor
+```
+
+To stop:
+
+```bash
+tmux kill-session -t afm-monitor
 ```
 
 ## Health Monitoring
 
 ```bash
 curl -s http://127.0.0.1:5090/api/v1/health
+curl -s -H 'ngrok-skip-browser-warning: 1' \
+  https://chandra-unintentional-matrilaterally.ngrok-free.dev/api/v1/health
 ```
 
 Expected:
@@ -25,7 +51,9 @@ Expected:
 
 1. Submit job
 2. Poll `/api/v1/jobs/{job_id}`
-3. On `failed`, inspect:
+3. List recent jobs from website history endpoint:
+   - `/api/v1/jobs?limit=20&offset=0`
+4. On `failed`, inspect:
    - `error` field from status API
    - `jobs/<job_id>/artifacts/docker.log.txt`
    - `jobs/<job_id>/artifacts/log.txt`
@@ -61,4 +89,3 @@ find /data/alphafold-multimer-service/jobs -mindepth 1 -maxdepth 1 -type d -mtim
 3. Run one mock mode smoke test
 4. Run one real mode test job
 5. Inspect logs and restore normal queue operation
-
