@@ -9,3 +9,4 @@
 - `testing.md`: unit/contract/e2e testing guide
 - `integration-web.md`: integration with `shenlab-web` frontend
 - `audit-2026-02-11-test1-real-run.md`: publication-grade audit record for a real end-to-end run
+- `audit-2026-02-11-vercel-production-real-run.md`: publication-grade audit record for Vercel production website -> public API -> real AlphaFold-Multimer run
