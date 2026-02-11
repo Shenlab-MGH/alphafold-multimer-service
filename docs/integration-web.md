@@ -43,6 +43,12 @@ If you want private network access first (before public cloud exposure):
 5. Then expose:
    - `tailscale funnel --bg --yes 5090`
 
+If `tailscale funnel` returns `serve config denied`, your user is not an allowed operator yet.
+In that case either:
+
+- run the one-time `sudo tailscale set --operator=$USER`, or
+- use another HTTPS tunnel first (for example `ngrok http 5090`) until ops grants Tailscale operator access.
+
 ## Endpoint Contract
 
 Frontend should only depend on:

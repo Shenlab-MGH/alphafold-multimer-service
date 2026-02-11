@@ -56,6 +56,30 @@ Use real mode by running backend without `SHENLAB_MOCK=1`, then submit a short `
 - result has `primary_score.value`
 - artifacts are downloadable
 
+## Real Full BDD (No Mock)
+
+Run the browser test in real mode end-to-end (website input + real backend compute):
+
+```bash
+cd alphafold-multimer-service/e2e
+SHENLAB_E2E_MODE=real \
+SHENLAB_E2E_BACKEND_PORT=5100 \
+SHENLAB_E2E_FRONTEND_PORT=5190 \
+SHENLAB_E2E_API_BASE=http://127.0.0.1:5100 \
+SHENLAB_DATA_DIR=/home/robot/workspace/shenlab/alphafold-multimer-service/data \
+SHENLAB_COLABFOLD_CACHE_DIR=/home/robot/workspace/shenlab/alphafold-multimer-service/data/colabfold_cache \
+SHENLAB_E2E_REAL_PROTEIN_A=A0A2R8Y7G1 \
+SHENLAB_E2E_REAL_PROTEIN_B=P35625 \
+npx playwright test tests/alphafold-multimer-real.spec.js --reporter=list
+```
+
+This validates:
+
+- frontend auth + form submit
+- API job creation/status/result paths
+- real ColabFold execution
+- formula consistency: `ranking_confidence ~= 0.8*ipTM + 0.2*pTM`
+
 ## CI Recommendations
 
 1. PR: run `pytest` + Playwright e2e (mock mode)

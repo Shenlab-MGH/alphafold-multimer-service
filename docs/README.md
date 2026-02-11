@@ -8,3 +8,4 @@
 - `operations.md`: runbook and troubleshooting
 - `testing.md`: unit/contract/e2e testing guide
 - `integration-web.md`: integration with `shenlab-web` frontend
+- `audit-2026-02-11-test1-real-run.md`: publication-grade audit record for a real end-to-end run
