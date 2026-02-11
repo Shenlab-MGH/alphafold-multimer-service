@@ -7,5 +7,4 @@
 - `deploy.md`: deployment on GPU server
 - `operations.md`: runbook and troubleshooting
 - `testing.md`: unit/contract/e2e testing guide
-- `integration-web.md`: integration with `17-lab-web` frontend
-
+- `integration-web.md`: integration with `shenlab-web` frontend

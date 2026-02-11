@@ -1,8 +1,8 @@
-# Web Integration (`17-lab-web`)
+# Web Integration (`shenlab-web`)
 
 ## Goal
 
-Connect the static frontend (`17-lab-web`, Vercel) to this backend service.
+Connect the static frontend (`shenlab-web`, Vercel) to this backend service.
 
 Frontend input:
 
@@ -28,6 +28,21 @@ Frontend output:
    - set `SHENLAB_API_TOKEN`
    - frontend sends `Authorization: Bearer <token>`
 
+## Tailscale-First Deployment Notes
+
+If you want private network access first (before public cloud exposure):
+
+1. Start backend on the node:
+   - `uvicorn alphafold_multimer_service.api:create_app --factory --host 0.0.0.0 --port 5090`
+2. Tailnet access URL (same tailnet users):
+   - `http://robot-intel.taild54253.ts.net:5090`
+3. For browser access from HTTPS frontend (Vercel), API must also be HTTPS:
+   - use `tailscale funnel` or a public HTTPS ingress
+4. One-time operator setup (requires root on host):
+   - `sudo tailscale set --operator=$USER`
+5. Then expose:
+   - `tailscale funnel --bg --yes 5090`
+
 ## Endpoint Contract
 
 Frontend should only depend on:
@@ -51,4 +66,3 @@ npm test
 ```
 
 This validates the full behavior from browser UI to backend API.
-

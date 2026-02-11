@@ -31,12 +31,21 @@ npm test
 The e2e runner starts:
 
 - backend mock service on `127.0.0.1:5090`
-- frontend static server from `../17-lab-web` on `127.0.0.1:5180`
+- frontend static server from `../shenlab-web` on `127.0.0.1:5180` (fallback: `../17-lab-web`)
 
 You can override frontend path with:
 
 ```bash
-export SHENLAB_FRONTEND_DIR=/absolute/path/to/17-lab-web
+export SHENLAB_FRONTEND_DIR=/absolute/path/to/shenlab-web
+```
+
+You can also override test ports and API base:
+
+```bash
+export SHENLAB_E2E_BACKEND_PORT=5091
+export SHENLAB_E2E_FRONTEND_PORT=5181
+export SHENLAB_E2E_API_BASE=http://127.0.0.1:5091
+npm test
 ```
 
 ## Optional Real GPU Smoke Test
@@ -55,4 +64,3 @@ Use real mode by running backend without `SHENLAB_MOCK=1`, then submit a short `
    - contract drift
    - API regression
    - frontend behavior regression
-
